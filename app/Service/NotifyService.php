@@ -19,7 +19,7 @@ class NotifyService {
                     $groupName = $userMap[$val['uid']]['group'][$detail['g_id']];
 
                 }
-                $content = '';
+                $content = $val['created_at'] . " ";
                 if ($groupName) {
                     $content .= "【".$groupName."】";
                 }
