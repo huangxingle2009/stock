@@ -16,18 +16,18 @@ class StockService {
             self::$md = self::_getMd();
 
             try {
-                $cookie = Storage::get("cookie_file.txt");
-                $cookie = json_decode($cookie, true);
+                #$cookie = Storage::get("cookie_file.txt");
+                #$cookie = json_decode($cookie, true);
 
             } catch (\Exception $e) {
 
-                $cookie = self:: _checkLoin();
+                #$cookie = self:: _checkLoin();
             }
 
             $curl = new Curl();
             $url = 'https://www.aigupiao.com/api/liver_msg.php?act=liver_center&source=pc&md=' . self::$md;
             $curl->setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36");
-            $curl->setCookies($cookie);
+            #$curl->setCookies($cookie);
             $body = [
                 'id' => $uid,
                 'u_id' => '296904',

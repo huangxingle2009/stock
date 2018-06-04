@@ -25,7 +25,7 @@ class NotifyService {
                 }
                 $content .= strip_tags($detail['content']);
                 $qqGroupName = $userMap[$val['uid']]['qq'];
-                $return = exec("/usr/local/bin/qq send group $qqGroupName " . $content . "\r\n", $res);
+                $return = exec(env('QQ') . " send group $qqGroupName " . $content . "\r\n", $res);
                 if ($return == '无法连接 QQBot-Term 服务器') {
 
                 } else {
