@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 
 use App\Model\Stock;
+use App\Service\NotifyService;
 use App\Service\StockService;
 use Curl\Curl;
 use Illuminate\Support\Facades\Storage;
@@ -15,9 +16,12 @@ class StockController extends Controller
 
 
     public function worm(){
+        exit;
+        NotifyService::sendToGroup();
+        exit;
         //login
-        StockService::worm();
-
+        StockService::worm(8);
+        exit;
 
 //        $curl->setCookie('PHPSESSID', 'ma4cght76o1olc01laduosoc02');
 

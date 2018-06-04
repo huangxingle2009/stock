@@ -9,48 +9,67 @@ class StockService {
     static $md;
 
 
-    public static function worm($uid = 8, $before = null){
-        self::$md = self::_getMd();
-
+    public static function worm($uid = null, $before = null){
+        if (!$uid)
+            return;
         try {
-            $cookie = Storage::get("cookie_file.txt");
-            $cookie = json_decode($cookie, true);
+            self::$md = self::_getMd();
+
+            try {
+                $cookie = Storage::get("cookie_file.txt");
+                $cookie = json_decode($cookie, true);
+
+            } catch (\Exception $e) {
+
+                $cookie = self:: _checkLoin();
+            }
+
+            $curl = new Curl();
+            $url = 'https://www.aigupiao.com/api/liver_msg.php?act=liver_center&source=pc&md=' . self::$md;
+            $curl->setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36");
+            $curl->setCookies($cookie);
+            $body = [
+                'id' => $uid,
+                'u_id' => '296904',
+                'before' => $before ?: time(),
+                'source' => 'pc'
+            ];
+            $curl->post($url, $body);
+            $list = json_decode($curl->response, true);
+            if ($list) {
+                if (count($list['msg_list']) > 0) {
+                    foreach ($list['msg_list'] as $val) {
+                        if ($val['kind'] == 'vip') {
+                            $item = self::getDetail($val['id']);
+                            if (!$item) {
+                                echo $val['id'];exit;
+                            }
+                            $stock = new Stock();
+                            $stock->create([
+                                'show_detail' => json_encode($item),
+                                'uid' => $uid,
+                                'created_at' => $item['rec_time'],
+                                'updated_at' => $item['rec_time']
+                            ]);
+                        }
+                    }
+                    $last = array_pop($list['msg_list']);
+//                    usleep(20);
+                    self::worm($uid, $last['rec_time']);
+
+                }
+
+            }
+
 
         } catch (\Exception $e) {
+            //unique 重复
+            if ($e->getCode() == '23000') {
+//                echo $uid . "\r\n";
 
-            $cookie = self:: _checkLoin();
-        }
-
-        $curl = new Curl();
-        $url = 'https://www.aigupiao.com/api/liver_msg.php?act=liver_center&source=pc&md=' . self::$md;
-        $curl->setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36");
-        $curl->setCookies($cookie);
-        $body = [
-            'id' => $uid,
-            'u_id' => '296904',
-            'before' => $before ?: time(),
-            'source' => 'pc'
-        ];
-        $curl->post($url, $body);
-        $list = json_decode($curl->response, true);
-        if ($list) {
-            if (count($list['msg_list']) > 0) {
-                foreach ($list['msg_list'] as $val) {
-                    if ($val['kind'] == 'vip') {
-                        $item = self::getDetail($val['id']);
-                        $stock = new Stock();
-                        $stock->create([
-                            'show_detail' => json_encode($item, JSON_UNESCAPED_UNICODE),
-                            'uid' => $uid,
-                            'created_at' => $item['rec_time'],
-                            'updated_at' => $item['rec_time']
-                        ]);
-                    }
-                }
-                $last = array_pop($list['msg_list']);
-//                $body['before'] = $last['rec_time'];
-                usleep(20);
-                self::worm($uid, $last['rec_time']);
+            } else {
+                //发短信给管理员
+                var_dump($e->getMessage());
 
             }
 
@@ -119,6 +138,19 @@ class StockService {
             return $md;
         });
         return $md;
+    }
+
+    public static function getLastQueryTime($uid) {
+        $created_at = Cache::rememberForever($uid . '_latestTime', function () use($uid){
+            $model = new Stock();
+            $res = $model->where("uid", $uid)->orderBy("created_at", "desc")->first();
+            if (!$res)
+                return 0;
+            else
+                return $res->toArray()['created_at'];
+
+        });
+        return $created_at;
     }
 
 

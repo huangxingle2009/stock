@@ -2,7 +2,9 @@
 
 namespace App\Console;
 
+use App\Console\Commands\Send;
 use App\Console\Commands\Stock;
+use App\Service\StockService;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -14,7 +16,8 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        Stock::class
+        Stock::class,
+        Send::class
     ];
 
     /**
@@ -25,8 +28,13 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')
-        //          ->hourly();
+        $schedule->call(function () {
+            $arr = config("user");
+            $arr_uid = array_column($arr, 'uid');
+            foreach ($arr_uid as $key => $uid) {
+                StockService::worm($uid);
+            }
+        })->everyMinute()->name('collect-stock')->withoutOverlapping();;
     }
 
     /**
