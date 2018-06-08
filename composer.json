@@ -8,9 +8,11 @@
         "php": ">=7.0.2",
         "jaeger/querylist": "^4.0",
         "kilingzhang/coolq-php-sdk": "^1.0",
+        "laravel/envoy": "^1.4",
         "laravel/framework": "5.5.*",
         "laravel/tinker": "~1.0",
         "php-curl-class/php-curl-class": "^8.0",
+        "sentry/sentry-laravel": "^0.9.0",
         "workerman/gatewayclient": "^3.0"
     },
     "require-dev": {

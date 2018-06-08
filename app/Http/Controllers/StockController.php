@@ -16,6 +16,7 @@ class StockController extends Controller
 
 
     public function worm(){
+        new NotifyServic();
         exit;
         NotifyService::sendToGroup();
         exit;
